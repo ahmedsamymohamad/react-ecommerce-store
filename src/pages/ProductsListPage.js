@@ -1,38 +1,41 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { getProductsList } from '../actions/productActions'
-import Message from '../components/Message'
-import { Spinner, Row, Col } from 'react-bootstrap'
-import Product from '../components/Product'
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getProductsList } from '../actions/productActions';
+import Message from '../components/Message';
+import { Spinner, Row, Col } from 'react-bootstrap';
+import Product from '../components/Product';
 import { useHistory } from "react-router-dom";
-import { CREATE_PRODUCT_RESET } from '../constants'
-
+import { CREATE_PRODUCT_RESET } from '../constants';
 
 function ProductsListPage() {
-
-    let history = useHistory()
-    let searchTerm = history.location.search
-    const dispatch = useDispatch()
+    let history = useHistory();
+    let searchTerm = history.location.search;
+    const dispatch = useDispatch();
 
     // products list reducer
-    const productsListReducer = useSelector(state => state.productsListReducer)
-    const { loading, error, products } = productsListReducer
+    const productsListReducer = useSelector(state => state.productsListReducer);
+    const { loading, error, products } = productsListReducer;
 
     useEffect(() => {
-        dispatch(getProductsList())
+        dispatch(getProductsList());
         dispatch({
             type: CREATE_PRODUCT_RESET
-        })
+        });
         //dispatch(checkTokenValidation())
-    }, [dispatch])
+    }, [dispatch]);
 
     const showNothingMessage = () => {
         return (
             <div>
                 {!loading ? <Message variant='info'>Nothing to show</Message> : ""}                
             </div>
-        )
-    }
+        );
+    };
+
+    // Ensure products is an array
+    const filteredProducts = Array.isArray(products) ? products.filter((item) => 
+        item.name.toLowerCase().includes(searchTerm !== "" ? searchTerm.split("=")[1] : "")
+    ) : [];
 
     return (
         <div>
@@ -45,27 +48,18 @@ function ProductsListPage() {
             </span>}
             <div>
                 <Row>
-
-                    {/* If length of the filter result is equal to 0 then show 'nothing found' message
-                        with help of showNothingMessage function else show the filtered result on the
-                        webpage and then run the map function */}
-
-                    {(products.filter((item) =>
-                        item.name.toLowerCase().includes(searchTerm !== "" ? searchTerm.split("=")[1] : "")
-                    )).length === 0 ? showNothingMessage() : (products.filter((item) =>
-                        item.name.toLowerCase().includes(searchTerm !== "" ? searchTerm.split("=")[1] : "")
-                    )).map((product, idx) => (
+                    {/* Show 'nothing found' message or filtered products */}
+                    {filteredProducts.length === 0 ? showNothingMessage() : filteredProducts.map((product) => (
                         <Col key={product.id} sm={12} md={6} lg={4} xl={3}>
                             <div className="mx-2"> 
                                 <Product product={product} />
                             </div>
                         </Col>
-                    )
-                    )}
+                    ))}
                 </Row>
             </div>
         </div>
-    )
+    );
 }
 
-export default ProductsListPage
+export default ProductsListPage;
